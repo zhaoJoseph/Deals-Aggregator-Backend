@@ -14,7 +14,7 @@ const { PORT, FILENAME } = process.env;
 
 var jobs = [
   new CronJob(
-  "00/5 * * * * *",
+  "00 */5 * * * *",
   function() {
     console.log("Scraper started.")
     const process = fork('./scrape.js');

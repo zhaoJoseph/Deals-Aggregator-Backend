@@ -209,8 +209,8 @@ export class TwitterScrape {
           var tweets = await tweetBook.fetchNextPage();
 
           tweets = await tweets.map(tweet => ({
-            title: tweet.text,
-            url: `https://twitter.com/${tweet.author.name}/status/${tweet.id}`
+            title: encodeURIComponent(tweet.text),
+            url: encodeURIComponent(`https://twitter.com/${tweet.author.name}/status/${tweet.id}`)
           }))
 
           return tweets
@@ -259,8 +259,8 @@ export class RedditScrape {
             const posts = await request.getSubreddit(subreddit).getNew()
 
             itemArr = posts.map(post => ({
-                title: post.title,
-                url: `https://www.reddit.com${post.permalink}`
+                title: encodeURIComponent(post.title),
+                url: encodeURIComponent(`https://www.reddit.com${post.permalink}`)
             }))
 
             return itemArr
