@@ -8,6 +8,7 @@ import firefox from 'selenium-webdriver/firefox.js'
 import { PageLoadStrategy } from 'selenium-webdriver/lib/capabilities.js'
 import { Client } from 'twitter.js';
 import { TimeoutError } from 'selenium-webdriver/lib/error.js';
+import Logger from '../utils/logger.js';
 dotenv.config();
 
 const {TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_BEARER_TOKEN} = process.env; 
@@ -37,7 +38,7 @@ export class Scraper {
         return results;
 
       } catch (err) {
-        console.log(err)
+        Logger.error(err)
         throw new BaseError(err.name, codes.SERVER_ERROR, err.message)
       }
       }
@@ -161,10 +162,10 @@ export class HTMLGridScrape {
 
     } catch (err) {
 
-      console.log(err)
+      Logger.error(err)
 
         if(err instanceof TimeoutError){
-          console.log(`Attempt ${attempts + 1} timed out. Retrying...`);
+          Logger.info(`Attempt ${attempts + 1} timed out. Retrying...`);
           attempts++;
         }else if (err.statusCode) {
           throw new BaseError(err.error, err.statusCode, err.error);
@@ -174,7 +175,7 @@ export class HTMLGridScrape {
       }finally{
         if((attempts == 0)  || (attempts >= 3)){
         await driver.quit();
-        console.log(`Scraper Completed at ${new Date()} for site: ${url}`);
+        Logger.info(`Scraper Completed at ${new Date()} for site: ${url}`);
 
           if(attempts >= 3){
             throw new BaseError(new TimeoutError(), 1, "Timed out after 3 tries.")
@@ -216,11 +217,11 @@ export class TwitterScrape {
 
         }catch(err){
 
-          console.log(err)
+          Logger.error(err)
           throw new BaseError(err.name, codes.SERVER_ERROR, err.message)
 
         } finally {
-          console.log(`Scraper Completed at ${new Date()} for twitter page: ${username}`)
+          Logger.info(`Scraper Completed at ${new Date()} for twitter page: ${username}`)
         }
 
     }
@@ -245,6 +246,7 @@ export class RedditScrape {
                password: process.env.REDDIT_PASSWORD
            })
        }catch(err) {
+          Logger.error(err)
            throw new BaseError("Reddit Initialization Error", codes.SERVER_ERROR, err.message)
        }
 
@@ -264,9 +266,10 @@ export class RedditScrape {
             return itemArr
 
        }catch(err) {
+            Logger.error(err)
             throw new BaseError(err.name, codes.SERVER_ERROR, err.message)
        }finally {
-            console.log(`Scraper Completed at ${new Date()} for subreddit: ${subreddit}`)
+            Logger.info(`Scraper Completed at ${new Date()} for subreddit: ${subreddit}`)
        }
 
     }

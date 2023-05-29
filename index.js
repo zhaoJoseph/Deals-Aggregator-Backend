@@ -1,12 +1,9 @@
 import app from './app.js'
 import  http from 'http'
-import funcs from './scraper/aggregator.js'
-import async from 'async'
-import readline from 'readline'
 import EventEmitter from 'events'
-import { Scraper, HTMLGridScrape, TwitterScrape, RedditScrape } from './scraper/scrapeStrategies.js'
-import fs from 'fs'
 import process from 'node:process';
+import { fork } from 'child_process';
+import { CronJob } from 'cron';
 
 const server = http.createServer(app)
 
@@ -15,19 +12,24 @@ dotenv.config()
 
 const { PORT, FILENAME } = process.env;
 
-const gridScrape = new HTMLGridScrape();
-const twitterScrape = new TwitterScrape();
-const redditScrape = new RedditScrape();
+var jobs = [
+  new CronJob(
+  "00/5 * * * * *",
+  function() {
+    console.log("Scraper started.")
+    const process = fork('./scrape.js');
+  }),
+  new CronJob(
+  "00 5 * * * *",
+  function() {
+    console.log("Removing Expired.")
+    const process = fork('./expired.js');
+  }),
+]
 
-let strategies = {
-    "grid" : gridScrape,
-    "twitter" : twitterScrape,
-    "reddit" : redditScrape,
-}
-
-// read feed.txt
-// get strat
-// do import 
+jobs.forEach(function(job) {
+  job.start()
+})
 
 process.on('warning', (warning) => {
 
@@ -38,48 +40,6 @@ process.on('warning', (warning) => {
   console.warn(warning.message); // Print the warning message
   console.warn(warning.stack);   // Print the stack trace
 });
-
-
-//###################################################//
-//                  SCRAPER                          //
-//###################################################//
-
-async function startScraper() {
-
-const scraper = new Scraper()
-
-const siteQueue = async.queue(async (siteUrl) => {
-    const result = await scrapeSite(siteUrl)
-    await funcs.aggregateData(result)
-}, 1)
-
-await processSites()
-
-}
-
-async function processSites() {
-
-  const stream = fs.createReadStream(`${FILENAME}`, {encoding: 'utf8'})
-  const rl = readline.createInterface({
-    input: stream,
-    crlfDelay: Infinity
-  });
-
-  for await (const line of rl) {
-    // Add each site to the queue
-    siteQueue.push(line.trim());
-  }
-  
-}
-
-async function scrapeSite(line) {
-  const args = line.split(',');
-  scraper.setStrategy(strategies[args[1]])
-  const paramList = [args[0]].concat(args.slice(2))
-  const params = scraper.strategy.setParams(paramList)
-  const scraped_data = await scraper.scrape(params)
-  return scraped_data
-}
 
 // ################################################ //
 //                Server Initialization             //

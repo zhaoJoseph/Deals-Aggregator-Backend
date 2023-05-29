@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import BaseError from '../utils/baseError.js';
 import format from 'pg-format'
 import error from '../utils/error.js'
+import Logger from '../utils/logger.js';
 
 dotenv.config()
 
@@ -29,11 +30,34 @@ aggregateData: async (list) => {
     await client.connect();
     const query = format("INSERT INTO deals_table (title, url, time_inserted) SELECT * FROM json_populate_recordset((null, null, current_timestamp)::deals_table, %L) ON CONFLICT DO NOTHING;", dataList)
     const res = await client.query(query);
-    console.log(res)
+    Logger.info(res)
     await client.end();
 
   } catch (err) {
-    console.log(err)
+    Logger.error(err)
+
+    if(!err.code) {
+      throw new BaseError(err.error, err.codes.SERVER_ERROR, err.error)
+    }else {
+      throw new BaseError(err.name, err.code, err.message + ' ' + err.detail)
+    }
+  } 
+},
+
+removeExpired: async () => {
+  try{
+    const Client = pg.Client
+    const client = new Client({
+      connectionString: URL
+    });
+    await client.connect();
+    const query = format("CALL remove_expired();");
+    const res = await client.query(query);
+    Logger.info(res)
+    await client.end();
+
+  } catch (err) {
+    Logger.error(err)
 
     if(!err.code) {
       throw new BaseError(err.error, err.codes.SERVER_ERROR, err.error)
@@ -42,6 +66,7 @@ aggregateData: async (list) => {
     }
   } 
 }
+
 }
 
 export default funcs
