@@ -14,11 +14,14 @@ const { PORT, FILENAME } = process.env;
 
 var jobs = [
   new CronJob(
-  "00 */5 * * * *",
+  "00 */10 * * * *",
   function() {
     console.log("Scraper started.")
     const process = fork('./scrape.js');
-  }),
+  },
+  null,
+  false,
+  'America/Toronto'),
   new CronJob(
   "00 5 * * * *",
   function() {
@@ -45,6 +48,8 @@ process.on('warning', (warning) => {
 //                Server Initialization             //
 // ################################################ //
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+const port = process.env.PORT || 3333;
+
+server.listen(port, () => {
+    console.log(`Server running on port ${port}`)
 })
