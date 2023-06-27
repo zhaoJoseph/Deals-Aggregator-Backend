@@ -5,6 +5,14 @@ import error from '../utils/error.js';
 
 const postController = {
 
+   /**
+   * Return all Posts by index pageNum
+   * If pageNum undefined, return first 30 posts
+   *
+   * @param {request object} req
+   * @param {response object} res
+   * @param {next middleware caller} next
+   */
     async getPosts(req, res, next){
 
         const {pageNum} = req.query;
@@ -22,6 +30,14 @@ const postController = {
         }
     },
 
+   /**
+   * Return total number of posts in database
+   * 
+   *
+   * @param {request object} req
+   * @param {response object} res
+   * @param {next middleware caller} next
+   */
     async getTotal(req, res, next){
         try{
             const data = await Post.getTotal();
@@ -36,6 +52,14 @@ const postController = {
         }
     },
 
+   /**
+   * Return posts whose title contains entries in searchParams
+   * Return entries indexed by pageNum
+   *
+   * @param {request object} req
+   * @param {response object} res
+   * @param {next middleware caller} next
+   */
     async search(req, res, next){
       const {searchParams, pageNum} = req.query;
       try{

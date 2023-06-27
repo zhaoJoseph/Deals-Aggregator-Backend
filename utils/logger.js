@@ -17,6 +17,11 @@ const fileRotateTransport = new transports.DailyRotateFile({
   maxFiles: "14d",
 });
 
+
+/**
+ *  Basic logger function
+ *  - Logs to file rotate-%DATE%.log in logs folder
+ */
 const Logger = createLogger({
   level: "info",
   format: combine(label({ label: CATEGORY }), json()),
