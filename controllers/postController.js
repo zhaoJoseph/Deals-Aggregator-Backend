@@ -61,9 +61,10 @@ const postController = {
    * @param {next middleware caller} next
    */
     async search(req, res, next){
-      const {searchParams, pageNum} = req.query;
+      const {searchParams, urlParams, pageNum} = req.query;
+
       try{
-        const data = await Post.search({searchParams, pageNum});
+        const data = await Post.search({searchParams, urlParams, pageNum});
         return data;
       }catch(err) {
         console.log(err)
@@ -73,7 +74,31 @@ const postController = {
           throw new BaseError(err.name, err.code, err.message)
         }
       }
+    },
+
+
+   /**
+   * Return latest build time for new posts
+   * Return entries indexed by pageNum
+   *
+   * @param {request object} req
+   * @param {response object} res
+   * @param {next middleware caller} next
+   */
+   async getBuild(req, res, next){
+
+    try{
+      const data = await Post.build();
+      return data;
+    }catch(err) {
+      console.log(err)
+      if(!err.code){
+        throw new BaseError(err.error, error.codes.SERVER_ERROR, err.error)
+      }else {
+        throw new BaseError(err.name, err.code, err.message)
+      }
     }
+  }
 
 }
 
